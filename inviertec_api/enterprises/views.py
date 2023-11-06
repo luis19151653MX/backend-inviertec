@@ -14,10 +14,10 @@ def obtener_datos_empresa(request, nombre_empresa):
         start_date = today - timedelta(days=365 * 2)
         data = ticker.history(start=start_date, end=today)
         data = data.reset_index()
-        data = data[['Date', 'Adj Close']]
+        data = data[['Date', 'Close']]
         data.columns = ['fecha', 'precio']
         data = data.to_dict(orient='records')
-
         return Response(data)
+
     except Exception as e:
         return Response({'error': str(e)})
