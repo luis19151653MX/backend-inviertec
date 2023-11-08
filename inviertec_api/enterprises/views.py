@@ -11,11 +11,11 @@ def obtener_datos_empresa(request, nombre_empresa):
     try:
         ticker = yf.Ticker(nombre_empresa)
         today = date.today()
-        start_date = today - timedelta(days=365 * 2)
+        start_date = today - timedelta(days=365 * 1)
         data = ticker.history(start=start_date, end=today)
         data = data.reset_index()
         data = data[['Date', 'Close']]
-        data.columns = ['fecha', 'precio']
+        data.columns = ['date', 'price']
         data = data.to_dict(orient='records')
         return Response(data)
 
