@@ -16,6 +16,10 @@ def obtener_datos_empresa(request, nombre_empresa):
         data = data.reset_index()
         data = data[['Date', 'Close']]
         data.columns = ['date', 'price']
+        
+         # precio a dos decimales
+        data['price'] = data['price'].apply(lambda x: round(x, 2))
+
         data = data.to_dict(orient='records')
         return Response(data)
 
