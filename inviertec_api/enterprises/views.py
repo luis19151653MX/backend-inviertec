@@ -11,7 +11,7 @@ empresas = [
     {'idEnterprise': 2, 'nameEnterprise': 'Microsoft Corporation', 'ticker': 'MSFT'},
     {'idEnterprise': 3, 'nameEnterprise': 'Amazon.com Inc.', 'ticker': 'AMZN'},
     {'idEnterprise': 4, 'nameEnterprise': 'Alphabet Inc.', 'ticker': 'GOOGL'},
-    {'idEnterprise': 5, 'nameEnterprise': 'Facebook, Inc.', 'ticker': 'FB'},
+    {'idEnterprise': 5, 'nameEnterprise': 'Meta Platforms, Inc.', 'ticker': 'META'},
     {'idEnterprise': 6, 'nameEnterprise': 'Tesla, Inc.', 'ticker': 'TSLA'},
     {'idEnterprise': 7, 'nameEnterprise': 'Johnson & Johnson', 'ticker': 'JNJ'},
     {'idEnterprise': 8, 'nameEnterprise': 'Procter & Gamble Co.', 'ticker': 'PG'},
