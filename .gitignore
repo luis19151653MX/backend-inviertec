@@ -1,3 +1,4 @@
 env
 inviertec_api/inviertec_api/__pycache__
 inviertec_api/enterprises/__pycache__
+inviertec_api/enterprises/migrations
