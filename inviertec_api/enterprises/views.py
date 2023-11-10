@@ -29,8 +29,9 @@ empresas = [
     {'idEnterprise': 20, 'nameEnterprise': 'Cisco Systems, Inc.', 'ticker': 'CSCO'},
 ]
 
-@api_view(['GET'])
-def obtener_datos_empresas(request):
+empresas_datos=[]
+#@api_view(['GET'])
+def cargar_datos_empresas():
     try:
         resultados = []
 
@@ -50,13 +51,17 @@ def obtener_datos_empresas(request):
                 'ticker': empresa['ticker'],
                 'lastPrice': ultimo_precio_cierre
             }
-
+            empresas_datos.append(resultado_empresa)
             resultados.append(resultado_empresa)
 
         return Response(resultados)
 
     except Exception as e:
         return Response({'error': str(e)})
+
+@api_view(['GET'])
+def obtener_datos_empresas(request):
+    return Response(empresas_datos)
 
 @api_view(['GET'])
 def obtener_datos_empresa(request, nombre_empresa):
