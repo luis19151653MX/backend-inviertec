@@ -5,8 +5,9 @@ class EnterprisesConfig(AppConfig):
     name = 'enterprises'
 
     def ready(self):
-        print("Ejecutando inviertec")
         # Importa y ejecuta la función cargar_datos_empresas
         from enterprises.views import cargar_datos_empresas
+        print("Ejecutando inviertec")
         cargar_datos_empresas()
+        print("Datos cargados")
         
