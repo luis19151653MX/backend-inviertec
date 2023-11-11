@@ -1,16 +1,3 @@
 env/
 inviertec_api/enterprises/__pycache__/
 inviertec_api/inviertec_api/__pycache__/
-
-# Byte-compiled / optimized / DLL files
-inviertec_api/enterprises/__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Django
-*.log
-db.sqlite3
-__pycache__/
-*.pyc
-*.pyo
