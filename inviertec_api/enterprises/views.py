@@ -1,10 +1,16 @@
 from django.shortcuts import render
 
 # Create your views here.
+import os
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 import yfinance as yf
 from datetime import date, timedelta
+import keras
+
+
+modelo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../modeloPrediccion/modelo_prediccion_acciones.h5'))
+model = keras.models.load_model(modelo_path)
 
 empresas = [
     {'idEnterprise': 1, 'nameEnterprise': 'Apple Inc.', 'ticker': 'AAPL', 'image': 'http://127.0.0.1:3002/images/enterprises/aapl.png'},
@@ -83,3 +89,9 @@ def obtener_datos_empresa(request, nombre_empresa):
 
     except Exception as e:
         return Response({'error': str(e)})
+
+
+@api_view(['GET'])
+def predecirValor(request,nombre_empresa):
+    mensaje = "valor de " + nombre_empresa
+    return Response({'mensaje': mensaje})
