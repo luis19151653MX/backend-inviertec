@@ -12,6 +12,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('obtener_datos_empresas', obtener_datos_empresas, name='obtener_datos_empresas'),
     path('obtener_datos_empresa/<str:nombre_empresa>/', obtener_datos_empresa, name='obtener_datos_empresa'),
-    path('predecirValor/<str:nombre_empresa>/', predecirValor, name='predecirValor'),
+    path('predecirValor/<str:ticker>/', predecirValor, name='predecirValor'),
 ]
 

@@ -1,12 +1,20 @@
-from django.shortcuts import render
-
-# Create your views here.
+#The next 2 linea are to disable warning decrepted messages from keras and TensorFlow
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 import yfinance as yf
-from datetime import date, timedelta
+
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+import pandas as pd
+from datetime import date, timedelta, datetime
 import keras
+import numpy as np
+from sklearn.preprocessing import MinMaxScaler
 
 
 modelo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../modeloPrediccion/modelo_prediccion_acciones.h5'))
@@ -92,6 +100,56 @@ def obtener_datos_empresa(request, nombre_empresa):
 
 
 @api_view(['GET'])
-def predecirValor(request,nombre_empresa):
-    mensaje = "valor de " + nombre_empresa
-    return Response({'mensaje': mensaje})
+def predecirValor(request,ticker):
+    #mensaje = f"valor de {ticker} para los próximos {dias_predecir} días"
+    #calcular fecha actual
+    today = datetime.today()
+    end_date_str = today.strftime('%Y-%m-%d')
+
+    #obtener datos
+    tickerEnterprise = yf.Ticker(ticker)
+    hist = tickerEnterprise.history(start = '2012-1-1', end='2022-12-31')
+    hist_test=tickerEnterprise.history(start='2023-1-1', end=end_date_str)
+    actual_prices = hist_test["Close"].values
+    #crear data frame y dar formato a la fecha
+    hist_test1=hist_test.reset_index();
+    hist_test1['Date'] = pd.to_datetime(hist_test1['Date'], format='%Y-%m-%d %H:%M:%S%z')
+
+
+    #fecha a predecir en base a dias_predecir
+    prediction_days = 60
+    ultima_fecha = hist_test1['Date'].max()
+
+    #obtener datos de los utlimos dias en espejo a los dias_predecir
+    ultimos_30_dias = hist_test1[hist_test1['Date'] >= ultima_fecha - timedelta(days=39)]
+    # Actualiza las fechas de los próximos 30 días.
+    ultimos_30_dias['Date'] = pd.date_range(start=ultima_fecha + timedelta(days=1), periods=27, freq='D')
+    # Concatena el DataFrame original con los datos de los últimos 30 días.
+    df_extendido = pd.concat([hist_test1, ultimos_30_dias], ignore_index=True)
+    scaler = MinMaxScaler(feature_range=(0,1))
+    scaled_data = scaler.fit_transform(hist['Close'].values.reshape(-1,1))
+    
+    total_dataset = pd.concat((hist['Close'],df_extendido['Close']),axis=0)
+    model_inputs = total_dataset[len(total_dataset)-len(df_extendido)-prediction_days:].values
+    model_inputs = scaler.transform(model_inputs.reshape(-1,1))
+    x_test = []
+    for x in range(prediction_days,len(model_inputs)):
+        x_test.append(model_inputs[x-prediction_days:x,0])
+    
+    x_test = np.array(x_test)
+    x_test = np.reshape(x_test,(x_test.shape[0],x_test.shape[1],1))
+
+    #Aqui se abre el modelo que ya se tenia creado previamente
+    predicted_prices = model.predict(x_test)
+    predicted_prices = scaler.inverse_transform(predicted_prices)
+    
+    fechas = df_extendido.set_index("Date")['2023-11':].iloc[:,0].index.array
+
+    
+    datosPrediccion=dict(zip(fechas,predicted_prices))
+    datosPrediccionDF=pd.DataFrame(datosPrediccion).transpose()
+    actual=dict(zip(fechas,actual_prices))
+    actual_pricesDF=pd.DataFrame(actual,index=[0]).transpose()
+
+
+    return Response({"fechas":fechas,"datosPrediccion":datosPrediccionDF,"Datosactuales":actual_pricesDF})
