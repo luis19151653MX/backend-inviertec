@@ -152,11 +152,11 @@ def predecirValor(request,ticker):
     """
 
     fechas = df_extendido.set_index("Date")['2023':].iloc[:,0].index.array
-    datosPrediccion=dict(zip(fechas,predicted_prices))
-    datosPrediccionDF=pd.DataFrame(datosPrediccion).transpose()
+    data = []
+    for fecha, precio in zip(fechas, predicted_prices):
+        precio_redondeado = round(float(precio), 2)
+        data.append({"date": fecha.strftime('%Y-%m-%d'), "price": precio_redondeado})
+    todayFilter = datetime.today().date()
+    filtered_data = [item for item in data if datetime.strptime(item["date"], '%Y-%m-%d').date() >= todayFilter]
 
-    actual=dict(zip(fechas,actual_prices))
-    actual_pricesDF=pd.DataFrame(actual,index=[0]).transpose()
-
-
-    return Response({"fechas":fechas,"datosPrediccionDF":datosPrediccionDF,"datos":actual_pricesDF})
+    return Response(filtered_data)
