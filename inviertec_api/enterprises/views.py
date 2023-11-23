@@ -17,9 +17,6 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
 
-modelo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../modeloPrediccion/modelo_prediccion_acciones.h5'))
-model = keras.models.load_model(modelo_path)
-
 empresas = [
     {'idEnterprise': 1, 'nameEnterprise': 'Apple Inc.', 'ticker': 'AAPL', 'image': 'http://127.0.0.1:3002/images/enterprises/aapl.png'},
     {'idEnterprise': 2, 'nameEnterprise': 'Microsoft Corporation', 'ticker': 'MSFT', 'image': 'http://127.0.0.1:3002/images/enterprises/msft.png'},
@@ -106,7 +103,7 @@ def predecirValor(request,ticker):
     today = datetime.today()
     end_date_str = today.strftime('%Y-%m-%d')
 
-    #obtener datos
+    #cargar los datos
     tickerEnterprise = yf.Ticker(ticker)
     hist = tickerEnterprise.history(start = '2012-1-1', end='2022-12-31')
     hist_test=tickerEnterprise.history(start='2023-1-1', end=end_date_str)
@@ -132,6 +129,7 @@ def predecirValor(request,ticker):
     total_dataset = pd.concat((hist['Close'],df_extendido['Close']),axis=0)
     model_inputs = total_dataset[len(total_dataset)-len(df_extendido)-prediction_days:].values
     model_inputs = scaler.transform(model_inputs.reshape(-1,1))
+    
     x_test = []
     for x in range(prediction_days,len(model_inputs)):
         x_test.append(model_inputs[x-prediction_days:x,0])
@@ -139,17 +137,26 @@ def predecirValor(request,ticker):
     x_test = np.array(x_test)
     x_test = np.reshape(x_test,(x_test.shape[0],x_test.shape[1],1))
 
-    #Aqui se abre el modelo que ya se tenia creado previamente
+    #Aqui se usa el modelo que ya se tenia creado previamente
+    modelo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../modeloPrediccion/modelo_prediccion_acciones.h5'))
+    model = keras.models.load_model(modelo_path)
     predicted_prices = model.predict(x_test)
     predicted_prices = scaler.inverse_transform(predicted_prices)
     
-    fechas = df_extendido.set_index("Date")['2023-11':].iloc[:,0].index.array
 
-    
+    """
+    today = datetime.today().strftime('%Y-%m-%d')
+    df_extendido['Date'] = pd.to_datetime(df_extendido['Date']) 
+    fechas_filtradas = df_extendido[df_extendido['Date'] >= today]
+    fechas = fechas_filtradas['Date'].dt.strftime('%Y-%m-%d').tolist()
+    """
+
+    fechas = df_extendido.set_index("Date")['2023':].iloc[:,0].index.array
     datosPrediccion=dict(zip(fechas,predicted_prices))
     datosPrediccionDF=pd.DataFrame(datosPrediccion).transpose()
+
     actual=dict(zip(fechas,actual_prices))
     actual_pricesDF=pd.DataFrame(actual,index=[0]).transpose()
 
 
-    return Response({"fechas":fechas,"datosPrediccion":datosPrediccionDF,"Datosactuales":actual_pricesDF})
+    return Response({"fechas":fechas,"datosPrediccionDF":datosPrediccionDF,"datos":actual_pricesDF})
