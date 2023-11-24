@@ -160,3 +160,36 @@ def predecirValor(request,ticker):
     filtered_data = [item for item in data if datetime.strptime(item["date"], '%Y-%m-%d').date() >= todayFilter]
 
     return Response(filtered_data)
+
+
+#to database
+from django.views.decorators.csrf import csrf_exempt
+from pymongo import MongoClient
+
+@csrf_exempt
+@api_view(['GET'])
+def test_mongo_connection(request):
+    # Credenciales de MongoDB Atlas
+    mongo_uri = 'mongodb+srv://luisgutierrezdev:12345678inviertec@cluster0.djlp14w.mongodb.net/'
+
+    try:
+        client = MongoClient(mongo_uri)
+        # Acceder a la base de datos 'Inviertec'
+        db = client.Inviertec
+        # Acceder a la colección 'Mama'
+        coleccion = db.userspredictions
+        # Obtener todos los documentos en la colección 'Mama'
+        documentos = list(coleccion.find())
+
+        # Convertir ObjectId a str en cada documento
+        for doc in documentos:
+            doc['_id'] = str(doc['_id'])
+
+        # Cerrar la conexión
+        client.close()
+
+        # Devolver una respuesta JSON con los documentos recuperados
+        return Response({'success': True, 'message': 'Conexión exitosa', 'documentos': documentos})
+    except Exception as e:
+        # En caso de un error de conexión, devolver una respuesta JSON con el mensaje de error
+        return Response({'success': False, 'message': str(e)})

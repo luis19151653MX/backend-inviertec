@@ -4,6 +4,8 @@ from enterprises.views import obtener_datos_empresa;
 #from enterprises.views import cargar_datos_empresas;
 from enterprises.views import  obtener_datos_empresas;
 from enterprises.views import  predecirValor;
+from enterprises.views import test_mongo_connection
+
 
 
 #se elimino esta ruta, ya que esta se hace desde apps.py al encender el servidor
@@ -13,5 +15,7 @@ urlpatterns = [
     path('obtener_datos_empresas', obtener_datos_empresas, name='obtener_datos_empresas'),
     path('obtener_datos_empresa/<str:nombre_empresa>/', obtener_datos_empresa, name='obtener_datos_empresa'),
     path('predecirValor/<str:ticker>/', predecirValor, name='predecirValor'),
+
+    path('test-mongo-connection/', test_mongo_connection, name='test_mongo_connection'),
 ]
 
