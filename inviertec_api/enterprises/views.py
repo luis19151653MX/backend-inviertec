@@ -166,19 +166,26 @@ def predecirValor(request,ticker):
 from django.views.decorators.csrf import csrf_exempt
 from pymongo import MongoClient
 
+def conexion(operacion):
+    # Credenciales de MongoDB Atlas
+    mongo_uri = 'mongodb+srv://luisgutierrezdev:12345678inviertec@cluster0.djlp14w.mongodb.net/'        # Intentar establecer una conexión con MongoDB Atlas
+    client = MongoClient(mongo_uri)
+    if(operacion== "open"): 
+        # Acceder a la base de datos 'Inviertec'
+        db = client.Inviertec
+        # Acceder a la colección 'userspredictions' (o el nombre que prefieras)
+        coleccion = db.userspredictions
+        return coleccion
+    if(operacion== "close"):
+        client.close()
+
+
 @csrf_exempt
 @api_view(['GET'])
 def test_mongo_connection(request):
-    # Credenciales de MongoDB Atlas
-    mongo_uri = 'mongodb+srv://luisgutierrezdev:12345678inviertec@cluster0.djlp14w.mongodb.net/'
-
     try:
-        client = MongoClient(mongo_uri)
-        # Acceder a la base de datos 'Inviertec'
-        db = client.Inviertec
-        # Acceder a la colección 'Mama'
-        coleccion = db.userspredictions
-        # Obtener todos los documentos en la colección 'Mama'
+        coleccion=conexion("open")
+        # Obtener todos los documentos en la colección
         documentos = list(coleccion.find())
 
         # Convertir ObjectId a str en cada documento
@@ -186,10 +193,65 @@ def test_mongo_connection(request):
             doc['_id'] = str(doc['_id'])
 
         # Cerrar la conexión
-        client.close()
+        conexion("close")
 
         # Devolver una respuesta JSON con los documentos recuperados
         return Response({'success': True, 'message': 'Conexión exitosa', 'documentos': documentos})
     except Exception as e:
         # En caso de un error de conexión, devolver una respuesta JSON con el mensaje de error
+        return Response({'success': False, 'message': str(e)})
+    
+
+@csrf_exempt
+@api_view(['POST'])
+def guardar_prediccion(request):
+    try:
+        # Obtener datos del cuerpo de la solicitud POST
+        data = request.data
+        email = data.get('email')
+        ticker = data.get('ticker')
+        fecha_registro = datetime.now()
+        data_arr = data.get('data')
+        visible = data.get('visible', False)
+
+        # Obtener la colección
+        coleccion = conexion("open")
+
+        # Crear un nuevo documento
+        nuevo_documento = {
+            'email': email,
+            'ticker': ticker,
+            'fechaRegistro': fecha_registro,
+            'data': data_arr,
+            'visible': visible
+        }
+
+        # Insertar el nuevo documento en la colección
+        coleccion.insert_one(nuevo_documento)
+
+        # Cerrar la conexión
+        conexion("close")
+
+        return Response({'success': True, 'message': 'Documento agregado correctamente'},status=200)
+    except Exception as e:
+        return Response({'success': False, 'message': str(e)}, status=400)
+
+@api_view(['GET'])
+def obtener_predicciones_email(request, email):
+    try:
+        # Obtener la colección
+        coleccion = conexion("open")
+
+        # Obtener documentos donde 'visible' es True y 'email' coincide
+        documentos_visibles = list(coleccion.find({'visible': True, 'email': email}))
+
+        # Convertir ObjectId a str en cada documento
+        for doc in documentos_visibles:
+            doc['_id'] = str(doc['_id'])
+
+        # Cerrar la conexión
+        conexion("close")
+
+        return Response({'success': True, 'message': 'Documentos recuperados correctamente', 'documentos': documentos_visibles})
+    except Exception as e:
         return Response({'success': False, 'message': str(e)})
