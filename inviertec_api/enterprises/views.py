@@ -120,7 +120,7 @@ def predecirValor(request,ticker):
     #obtener datos de los utlimos dias en espejo a los dias_predecir
     ultimos_30_dias = hist_test1[hist_test1['Date'] >= ultima_fecha - timedelta(days=39)]
     # Actualiza las fechas de los próximos 30 días.
-    ultimos_30_dias['Date'] = pd.date_range(start=ultima_fecha + timedelta(days=1), periods=27, freq='D')
+    ultimos_30_dias['Date'] = pd.date_range(start=ultima_fecha + timedelta(days=1), periods=28, freq='D')
     # Concatena el DataFrame original con los datos de los últimos 30 días.
     df_extendido = pd.concat([hist_test1, ultimos_30_dias], ignore_index=True)
     scaler = MinMaxScaler(feature_range=(0,1))
@@ -209,9 +209,17 @@ def guardar_prediccion(request):
         # Obtener datos del cuerpo de la solicitud POST
         data = request.data
         email = data.get('email')
+        empresa=data.get('empresa')
         ticker = data.get('ticker')
+        image=data.get('image')
         fecha_registro = datetime.now()
-        data_arr = data.get('data')
+        fecha_prediccion=data.get('fechapred')
+        precio_real=data.get('precioreal')
+        precio_prediccion=data.get('preciopred')
+        acciones=data.get('acciones')
+        ganancia=data.get('ganancia')
+        real_data = data.get('real_data')
+        pred_data = data.get('pred_data')
         visible = data.get('visible', False)
 
         # Obtener la colección
@@ -220,9 +228,17 @@ def guardar_prediccion(request):
         # Crear un nuevo documento
         nuevo_documento = {
             'email': email,
+            'empresa': empresa,
             'ticker': ticker,
+            'image':image,
             'fechaRegistro': fecha_registro,
-            'data': data_arr,
+            'fecha_prediccion': fecha_prediccion,
+            'precio_real': precio_real,
+            'precio_prediccion': precio_prediccion,
+            'acciones': acciones,
+            'ganancia':ganancia,
+            'real_data': real_data,
+            'pred_data': pred_data,
             'visible': visible
         }
 
